@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -44,8 +45,47 @@ public:
 
 };
 
+class Hand {
+private:
+    vector<Card*> cards;
+public:
+    Hand() {};
+    Hand(vector<Card*> inCards) : cards(inCards) {};
+    void Add(Card* card) {
+        cards.push_back(card);
+    }
+
+    void Clear() {
+        cards.clear();
+    }
+
+    int GetValue() const {
+        int sum = 0;
+        for (int i = 0; i < cards.size(); i++)
+        {
+            sum = sum + cards[i]->GetValue();
+        }
+        return sum;
+    }
+
+
+};
+
 int main()
 {
-    Card card(HEARTS, ACE, 0);
-    cout << card.GetValue() << endl;
+    Card card1(HEARTS, NINE, 0);
+    Card card2(CLUBS, TWO, 0);
+    Card card3(HEARTS, THREE, 1);
+
+    Card* pCard1 = &card1;
+    Card* pCard2 = &card2;
+    Card* pCard3 = &card3;
+
+    Hand hand;
+
+    hand.Add(pCard1);
+    hand.Add(pCard2);
+    hand.Add(pCard3);
+
+    cout << "sum of cards: " << hand.GetValue() << endl;
 };
