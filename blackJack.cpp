@@ -63,7 +63,10 @@ public:
         int sum = 0;
         for (int i = 0; i < cards.size(); i++)
         {
-            sum = sum + cards[i]->GetValue();
+            if (cards[i]->GetValue() == ACE && (sum + 11) <= 21)
+                sum += 11;
+            else
+                sum += cards[i]->GetValue();
         }
         return sum;
     }
@@ -75,7 +78,7 @@ int main()
 {
     Card card1(HEARTS, NINE, 0);
     Card card2(CLUBS, TWO, 0);
-    Card card3(HEARTS, THREE, 1);
+    Card card3(HEARTS, ACE, 1);
 
     Card* pCard1 = &card1;
     Card* pCard2 = &card2;
