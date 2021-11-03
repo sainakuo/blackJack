@@ -39,14 +39,18 @@ public:
         faceUp = !faceUp;
     }
 
-    Value GetValue() const {
+    int GetValue() const {
+
+        if (!faceUp)
+            return 0;
+
         return value;
     }
 
 };
 
 class Hand {
-private:
+protected:
     vector<Card*> cards;
 public:
     Hand() {};
@@ -56,10 +60,15 @@ public:
     }
 
     void Clear() {
+        vector<Card*>::iterator it;
+        for (it = cards.begin(); it != cards.end(); it++) {
+            delete* it;
+            *it = 0;
+        }
         cards.clear();
     }
 
-    int GetValue() const {
+    int GetTotal() const {
         int sum = 0;
         for (int i = 0; i < cards.size(); i++)
         {
@@ -70,8 +79,27 @@ public:
         }
         return sum;
     }
+};
 
+class GenericPlayer : public Hand {
+protected:
+    string name;
+public: 
+    virtual bool isHitting() = 0;
+    bool isBoosted() const {
+        if (GetTotal() > 21) {
+            return true;
+        }
+        else
+            return false;
+    }
 
+    void Bust() {
+        if (isBoosted())
+        {
+            cout << name << ", " << "your hand is boosted!" << endl;
+        }
+    }
 };
 
 int main()
@@ -90,5 +118,5 @@ int main()
     hand.Add(pCard2);
     hand.Add(pCard3);
 
-    cout << "sum of cards: " << hand.GetValue() << endl;
+    cout << "sum of cards: " << hand.GetTotal() << endl;
 };
