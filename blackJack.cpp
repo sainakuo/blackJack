@@ -11,6 +11,7 @@ enum Suit {
 };
 
 enum Value {
+    ACE = 1,
     TWO = 2,
     THREE = 3,
     FOUR = 4,
@@ -22,8 +23,7 @@ enum Value {
     TEN = 10,
     JACK = 10,
     QUEEN = 10,
-    KING = 10,
-    ACE = 1
+    KING = 10
 };
 
 class Card {
@@ -47,7 +47,24 @@ public:
         return value;
     }
 
+    friend ostream& operator<<(ostream& output, const Card card);
+
 };
+
+ostream& operator<<(ostream& output, const Card card) {
+    const string VALUES[] = { "-", "A", "2", "3", "4", "5", "6", "7", "8", "9","10", "J", "Q", "K" };
+    const string SUITS[] = { "h", "d", "c", "s" };
+
+    if (!card.faceUp)
+    {
+        output << "XX";
+    }
+    else
+    {
+        output << VALUES[card.value] << SUITS[card.suit] << endl;
+    }
+    return output;
+}
 
 class Hand {
 protected:
@@ -85,7 +102,8 @@ class GenericPlayer : public Hand {
 protected:
     string name;
 public: 
-    virtual bool isHitting() = 0;
+    GenericPlayer(string inName) : name(inName) {}
+    virtual bool isHitting() const = 0;
     bool isBoosted() const {
         if (GetTotal() > 21) {
             return true;
@@ -95,10 +113,81 @@ public:
     }
 
     void Bust() {
-        if (isBoosted())
-        {
             cout << name << ", " << "your hand is boosted!" << endl;
+    }
+
+    friend ostream& operator<<(ostream& output, const GenericPlayer& player);
+};
+
+ostream& operator<<(ostream& output, const GenericPlayer& player) {
+    output << player.name << ": ";
+    if (player.cards.empty())
+    {
+        output << "Hand is empty!" << endl;
+        return output;
+    }
+    else
+    {
+        vector<Card*>::const_iterator it;
+
+        for (it = player.cards.begin(); it != player.cards.end(); it++)
+        {
+            output << **it << " ";
         }
+
+        if (player.GetTotal() != 0)
+            output << " sum: " << player.GetTotal() << endl;
+
+    }
+
+    return output;
+}
+
+class Player : public GenericPlayer {
+public: 
+    Player(string inName): GenericPlayer(inName) {}
+
+    virtual bool isHitting() const {
+        char answer;
+        cout << "Do you need one more Card? Y/N" << endl;
+        cin >> answer;
+
+        if (answer == 'Y' || answer == 'y')
+            return true;
+        else
+            return false;
+    }
+
+    void Win() const {
+        cout << name << ", congrats! You win!" << endl;
+    }
+
+    void Lose() const {
+        cout << name << ", sorry! You losed!" << endl;
+    }
+
+    void Push() const {
+        cout << name << "! You drew!" << endl;
+    }
+
+};
+
+class House : public GenericPlayer {
+public: 
+    House(string inName): GenericPlayer(inName) {}
+    virtual bool isHitting() const {
+
+        if (GetTotal() <= 16)
+            return true;
+        else
+            return false;
+    }
+
+    void FlipFirstCard() {
+        if (cards.empty())
+            cout << "Hand is empty!" << endl;
+        else
+            (**cards.begin()).Flip();
     }
 };
 
@@ -117,6 +206,8 @@ int main()
     hand.Add(pCard1);
     hand.Add(pCard2);
     hand.Add(pCard3);
+
+    cout << card1 << " " << card2 << " " << card3;
 
     cout << "sum of cards: " << hand.GetTotal() << endl;
 };
