@@ -105,12 +105,9 @@ public:
     GenericPlayer(string inName) : name(inName) {}
     virtual bool isHitting() const = 0;
     bool isBoosted() const {
-        if (GetTotal() > 21) {
-            return true;
-        }
-        else
-            return false;
+        return (GetTotal() > 21);
     }
+    
 
     void Bust() {
             cout << name << ", " << "your hand is boosted!" << endl;
@@ -152,10 +149,7 @@ public:
         cout << "Do you need one more Card? Y/N" << endl;
         cin >> answer;
 
-        if (answer == 'Y' || answer == 'y')
-            return true;
-        else
-            return false;
+        return (answer == 'Y' || answer == 'y');
     }
 
     void Win() const {
@@ -177,10 +171,8 @@ public:
     House(string inName): GenericPlayer(inName) {}
     virtual bool isHitting() const {
 
-        if (GetTotal() <= 16)
-            return true;
-        else
-            return false;
+        return (GetTotal() <= 16);
+
     }
 
     void FlipFirstCard() {
