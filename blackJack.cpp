@@ -1,131 +1,104 @@
-﻿#include <iostream>
-#include <vector>
+﻿#include "Header.h"
 
-using namespace std;
-
-enum Suit {
-    HEARTS, //червы
-    DIAMONDS, //бубны
-    CLUBS, //трефы 
-    SPADES //пики
+enum Card::Suit {
+    HEARTS,
+    DIAMONDS, 
+    CLUBS, 
+    SPADES 
 };
 
-enum Value {
-    ACE = 1,
-    TWO = 2,
-    THREE = 3,
-    FOUR = 4,
-    FIVE = 5,
-    SIX = 6,
-    SEVEN = 7,
-    EIGHT = 8,
-    NINE = 9,
-    TEN = 10,
-    JACK = 10,
-    QUEEN = 10,
-    KING = 10
+enum Card::Value { 
+    ACE = 1, 
+    TWO, 
+    THREE, 
+    FOUR, 
+    FIVE, 
+    SIX,
+    SEVEN, 
+    EIGHT, 
+    NINE, 
+    TEN, 
+    JACK, 
+    QUEEN, 
+    KING
 };
 
-class Card {
-private:
-    Suit suit;
-    Value value;
-    bool faceUp; // 1 - лицом вверх, 0 - лицом вниз
+void Card::Flip() {
+    faceUp = !faceUp;
+}
 
-public: 
-    Card(Suit inSuit, Value inValue, bool inFaceUp) : suit(inSuit), value(inValue), faceUp(inFaceUp) {};
+int Card::GetValue() const {
 
-    void Flip() {
-        faceUp = !faceUp;
-    }
+    if (!faceUp)
+        return 0;
 
-    int GetValue() const {
+    if (value == JACK || value == QUEEN || value == KING)
+        return 10;
 
-        if (!faceUp)
-            return 0;
+    return value;
+}
 
-        return value;
-    }
-
-    friend ostream& operator<<(ostream& output, const Card card);
-
-};
-
-ostream& operator<<(ostream& output, const Card card) {
-    const string VALUES[] = { "-", "A", "2", "3", "4", "5", "6", "7", "8", "9","10", "J", "Q", "K" };
-    const string SUITS[] = { "h", "d", "c", "s" };
+std::ostream& operator<<(std::ostream& output, const Card& card) {
+    const std::string VALUES[] = { "-", "A", "2", "3", "4", "5", "6", "7", "8", "9","10", "J", "Q", "K" };
+    const std::string SUITS[] = { "h", "d", "c", "s" };
 
     if (!card.faceUp)
     {
-        output << "XX";
+        output << "XX" ;
     }
     else
     {
-        output << VALUES[card.value] << SUITS[card.suit] << endl;
+        output << VALUES[card.value] << SUITS[card.suit] ;
     }
     return output;
 }
 
-class Hand {
-protected:
-    vector<Card*> cards;
-public:
-    Hand() {};
-    Hand(vector<Card*> inCards) : cards(inCards) {};
-    void Add(Card* card) {
-        cards.push_back(card);
-    }
 
-    void Clear() {
-        vector<Card*>::iterator it;
-        for (it = cards.begin(); it != cards.end(); it++) {
-            delete* it;
-            *it = 0;
-        }
-        cards.clear();
-    }
+void Hand::Add(Card* card) {
+    cards.push_back(card);
+}
 
-    int GetTotal() const {
-        int sum = 0;
-        for (int i = 0; i < cards.size(); i++)
-        {
-            if (cards[i]->GetValue() == ACE && (sum + 11) <= 21)
-                sum += 11;
-            else
-                sum += cards[i]->GetValue();
-        }
-        return sum;
+void Hand::Clear() {
+    std::vector<Card*>::iterator it;
+    for (it = cards.begin(); it != cards.end(); it++) {
+        delete* it;
+        *it = 0;
     }
-};
+    cards.clear();
+}
 
-class GenericPlayer : public Hand {
-protected:
-    string name;
-public: 
-    GenericPlayer(string inName) : name(inName) {}
-    virtual bool isHitting() const = 0;
-    bool isBoosted() const {
-        return (GetTotal() > 21);
+int Hand::GetTotal() const {
+    int sum = 0;
+    for (int i = 0; i < cards.size(); i++)
+    {
+        if (cards[i]->GetValue() == Card::ACE && (sum + 11) <= 21)
+            sum += 11;
+        else 
+            sum += cards[i]->GetValue();
     }
+    return sum;
+}
+
+bool GenericPlayer::isBoosted() const {
+    return (GetTotal() > 21);
+}
     
+void GenericPlayer::Bust() const {
+    std::cout << std::endl;
+    std::cout << name << ", " << "your hand is boosted!" << std::endl;
+}
 
-    void Bust() {
-            cout << name << ", " << "your hand is boosted!" << endl;
-    }
-
-    friend ostream& operator<<(ostream& output, const GenericPlayer& player);
-};
-
-ostream& operator<<(ostream& output, const GenericPlayer& player) {
+std::ostream& operator<<(std::ostream& output, const GenericPlayer& player) {
+    output << std::endl;
     output << player.name << ": ";
     if (player.cards.empty())
     {
-        output << "Hand is empty!" << endl;
+        output << "Hand is empty!" << std::endl;
         return output;
     }
     else
     {
-        vector<Card*>::const_iterator it;
+        std::vector<Card*>::const_iterator it;
 
         for (it = player.cards.begin(); it != player.cards.end(); it++)
         {
@@ -133,73 +106,192 @@ ostream& operator<<(ostream& output, const GenericPlayer& player) {
         }
 
         if (player.GetTotal() != 0)
-            output << " sum: " << player.GetTotal() << endl;
+            output << " sum: " << player.GetTotal();
 
     }
-
     return output;
 }
 
-class Player : public GenericPlayer {
-public: 
-    Player(string inName): GenericPlayer(inName) {}
+bool Player::isHitting() const {
+    char answer;
 
-    virtual bool isHitting() const {
-        char answer;
-        cout << "Do you need one more Card? Y/N" << endl;
-        cin >> answer;
+    if (GetTotal() != 21)
+    {
+        std::cout << std::endl;
+        std::cout << name << ", do you need one more Card? Y/N" << std::endl;
+        std::cin >> answer;
 
         return (answer == 'Y' || answer == 'y');
     }
+    else
+    {
+        return false;
+    }
+}
 
-    void Win() const {
-        cout << name << ", congrats! You win!" << endl;
+void Player::Win() const {
+    std::cout << std::endl;
+    std::cout << name << ", congrats! You win!" << std::endl;
+}
+
+void Player::Lose() const {
+    std::cout << std::endl;
+    std::cout << name << ", sorry! You losed!" << std::endl;
+}
+
+void Player::Push() const {
+    std::cout << std::endl;
+    std::cout << name << "! You drew!" << std::endl;
+}
+
+bool House::isHitting() const {
+
+    return (GetTotal() <= 16);
+
+}
+
+void House::FlipFirstCard() {
+    if (cards.empty())
+        std::cout << "Hand is empty!" << std::endl;
+    else
+        (**cards.begin()).Flip();
+}
+
+Deck::Deck() {
+    Populate();
+}
+
+void Deck::Populate() {
+    Clear();
+
+    for (int s = Card::HEARTS; s <= Card::SPADES; s++)
+    {
+        for (int v = Card::ACE; v <= Card::KING; v++)
+        {            
+            Add(new Card(static_cast<Card::Suit>(s), static_cast<Card::Value>(v), 1));
+        }
+    }
+}
+
+void Deck::Shuffle() {
+    random_shuffle(cards.begin(), cards.end());
+}
+
+void Deck::Deal(Hand& aHand) {
+    if (!(cards.empty()))
+    {
+        aHand.Add(cards.back());
+        cards.pop_back();
+    }
+    else
+    {
+        std::cout << "there are not cards on deck " << std::endl;
+    }
+}
+
+void Deck::AdditionalCards(GenericPlayer& aGenericPlayer) {
+    while (!(aGenericPlayer.isBoosted()) && aGenericPlayer.isHitting())
+    {
+        Deal(aGenericPlayer);
+        std::cout << aGenericPlayer;
+
+        if (aGenericPlayer.isBoosted())
+        {
+            aGenericPlayer.Bust();
+        }
+    }
+}
+
+
+Game::Game(const std::vector<std::string>& names) {
+    std::vector<std::string>::const_iterator it;
+    for (it = names.begin(); it != names.end(); it++)
+    {
+        players.push_back(Player(*it));
     }
 
-    void Lose() const {
-        cout << name << ", sorry! You losed!" << endl;
+    deck.Populate();
+    srand(static_cast<unsigned int>(time(0))); //генератор случайных чисел
+    deck.Shuffle();
+}
+
+void Game::Play() {
+    std::vector<Player>::iterator it;
+
+    for (int i = 0; i < 2; i++)
+    {
+        for (it = players.begin(); it != players.end(); it++)
+        {
+            deck.Deal(*it);
+        }
+        deck.Deal(dealer);
     }
 
-    void Push() const {
-        cout << name << "! You drew!" << endl;
+    dealer.FlipFirstCard();
+       
+    for (it = players.begin(); it != players.end(); it++)
+    {
+        std::cout << *it;
     }
 
-};
+    std::cout << dealer;
 
-class House : public GenericPlayer {
-public: 
-    House(string inName): GenericPlayer(inName) {}
-    virtual bool isHitting() const {
 
-        return (GetTotal() <= 16);
-
+    for (it = players.begin(); it != players.end(); it++)
+    {
+        deck.AdditionalCards(*it);
     }
 
-    void FlipFirstCard() {
-        if (cards.empty())
-            cout << "Hand is empty!" << endl;
-        else
-            (**cards.begin()).Flip();
+    dealer.FlipFirstCard();
+    std::cout << dealer;
+
+    deck.AdditionalCards(dealer);
+
+    if (dealer.isBoosted())
+    {
+        for (it = players.begin(); it != players.end(); it++)
+        {
+            if (!(it->isBoosted()))
+            {
+                it->Win();
+            }
+        }
     }
-};
+    else {
+        for (it = players.begin(); it != players.end(); it++)
+        {
+            if (!(it->isBoosted()))
+            {
+                if (it->GetTotal() == dealer.GetTotal())
+                    it->Push();
+                else if (it->GetTotal() > dealer.GetTotal())
+                    it->Win();
+                else
+                    it->Lose();
+            }
+        }
+               
+    }
+
+    for (it = players.begin(); it != players.end(); it++)
+    {
+        it->Clear();
+    }
+
+    dealer.Clear();
+}
 
 int main()
 {
-    Card card1(HEARTS, NINE, 0);
-    Card card2(CLUBS, TWO, 0);
-    Card card3(HEARTS, ACE, 1);
+    std::vector<std::string> players{"Ivan", "Saina"};
+   
+    char answer = 'Y';
+    do {
+        Game game(players);
+        game.Play();
+        std::cout << std::endl << "Do you want to play again? Y/N" << std::endl;
+        std::cin >> answer;
+    } while (answer == 'Y' || answer == 'y');
 
-    Card* pCard1 = &card1;
-    Card* pCard2 = &card2;
-    Card* pCard3 = &card3;
-
-    Hand hand;
-
-    hand.Add(pCard1);
-    hand.Add(pCard2);
-    hand.Add(pCard3);
-
-    cout << card1 << " " << card2 << " " << card3;
-
-    cout << "sum of cards: " << hand.GetTotal() << endl;
+    return 0;
 };
